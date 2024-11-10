@@ -8,5 +8,8 @@ module.exports = buildModule("VotingModule", (m) => {
 
   const Voting = m.contract("Voting");
 
+
+  console.log({Voting})
+
   return { Voting };
 });
