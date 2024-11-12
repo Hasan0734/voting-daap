@@ -23,9 +23,9 @@ import {
     SelectValue,
   } from "./ui/select";
 
-const TimePicker = ({control, name, placeholder}) => {
-    const [selectedHour, setSelectedHour] = useState("00")
-    const [selectedMinute, setSelectedMinute] = useState("00")
+const TimePicker = ({control, name, placeholder, hour, minute}) => {
+    const [selectedHour, setSelectedHour] = useState(hour ? hour :"00")
+    const [selectedMinute, setSelectedMinute] = useState(minute ? minute :"00")
   
     const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'))
     const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))

@@ -38,7 +38,7 @@ const DatePicker = ({control, name, placeholder}) => {
                     )}
                   >
                     {field.value ? (
-                      format(field.value, "ddMMyyyyy")
+                      format(field.value, "MMM dd yyyy")
                     ) : (
                       <span>{placeholder}</span>
                     )}

@@ -19,7 +19,7 @@ const sidebarItems = [
 ];
 
 function App() {
-  const { address } = useAccount();
+  const { address, chainId } = useAccount();
   const [tabId, setTabId] = useState(1);
 
   const { data: owner } = useReadContract({
@@ -29,8 +29,24 @@ function App() {
     config: wagmiConfig,
   });
 
-  const { writeContract } = useWriteContract();
 
+  const { data: startingTime } = useReadContract({
+    abi: contractAbi,
+    address: contractAddress,
+    functionName: "startingTime",
+    config: wagmiConfig,
+  }, {uint: 'number'});
+
+  const { data: endingTime } = useReadContract({
+    abi: contractAbi,
+    address: contractAddress,
+    functionName: "endingTime",
+    config: wagmiConfig,
+  });
+
+  console.log({chainId})
+
+  const { writeContract } = useWriteContract();
 
   const handleOwner = async () => {
     //   writeContract({
@@ -49,7 +65,7 @@ function App() {
       case 1:
         return <VoteCard/>
       case 2: 
-        return <VoteDate/>
+        return <VoteDate startingTime={startingTime} endingTime={endingTime}/>
       case 3:
         return <Candidates/>
       case 4: 
@@ -59,11 +75,11 @@ function App() {
       }
   }
 
-  console.log({owner})
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4 ">
       <div className="flex flex-col items-center">
-        { (owner === address && address)  ? <></>: <ConnectButton showBalance={false  } chainStatus="none" />}
+        { owner === address && address  ? <></>: <ConnectButton showBalance={false  } chainStatus="none" />}
         <br />
         {address && (
           <>
