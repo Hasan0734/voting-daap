@@ -70,14 +70,14 @@ const Candidates = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const {data:candidate} = useReadContract({
+  const {data:existCandidate} = useReadContract({
     abi: contractAbi,
     address: contractAddress,
     functionName: "getCandidatesVotes",
 });
 
 
-console.log({candidate})
+console.log({existCandidate})
 
 
 
@@ -118,20 +118,20 @@ console.log({candidate})
               <TableRow>
                 <TableHead className="w-[200px]">Name</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Experience</TableHead>
+                <TableHead>Vote</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCandidates.map((candidate) => (
+              {existCandidate?.map((candidate) => (
                 <TableRow key={candidate.id}>
                   <TableCell className="font-medium">
-                    {candidate.name}
+                    {candidate.candidate}
                   </TableCell>
-                  <TableCell>{candidate.role}</TableCell>
-                  <TableCell>{candidate.experience}</TableCell>
-                  <TableCell>{candidate.status}</TableCell>
+                  <TableCell>Farmer</TableCell>
+                  <TableCell>{Number(candidate.votesCount)}</TableCell>
+                  <TableCell></TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

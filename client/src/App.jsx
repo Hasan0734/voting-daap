@@ -43,27 +43,24 @@ function App() {
     functionName: "endingTime",
     config: wagmiConfig,
   });
+  const { data: isVoting } = useReadContract({
+    abi: contractAbi,
+    address: contractAddress,
+    functionName: "isVoting",
+    config: wagmiConfig,
+  });
 
-  console.log({chainId})
 
-  const { writeContract } = useWriteContract();
 
-  const handleOwner = async () => {
-    //   writeContract({
-    //     abi: Voting.abi,
-    //     address: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
-    //     functionName: 'addCandidate',
-    //     args: [
-    //       '0xd2135CfB216b74109775236E36d4b433F1DF507B',
-    //     ],
-    //  })
-  };
+  console.log(startingTime, endingTime, isVoting)
+
+
 
 
   const renderComponent = (id) => {
     switch(id){
       case 1:
-        return <VoteCard/>
+        return <VoteCard isVoting={isVoting} startingTime={startingTime} endingTime={endingTime}/>
       case 2: 
         return <VoteDate startingTime={startingTime} endingTime={endingTime}/>
       case 3:
@@ -91,7 +88,10 @@ function App() {
                     {sidebarItems.map((item) => (
                       <Button
                         key={item.id}
-                        onClick={() => setTabId(item.id)}
+                        onClick={() => {
+                          setTabId(item.id)
+                          
+                        }}
                         variant={item.id === tabId ? "" : "outline"}
                       >
                         <item.icon /> {item.title}

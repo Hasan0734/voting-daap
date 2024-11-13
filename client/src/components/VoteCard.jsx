@@ -1,71 +1,90 @@
 import { Badge, Clock, Sparkles, ThumbsUp, Trophy } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import {Button} from './ui/button'
+import { Button } from "./ui/button";
+import {
+  differenceInSeconds,
+  formatDuration,
+  fromUnixTime,
+  getUnixTime,
+  intervalToDuration,
+} from "date-fns";
+import TimeCountDown from "./TimeCountDown";
+import DateCountdown from "./DateCountdown";
 
 const votingOptions = [
-    { id: 'option1', name: 'Interstellar', icon: '🚀' },
-    { id: 'option2', name: 'Inception', icon: '🌀' },
-    { id: 'option3', name: 'The Dark Knight', icon: '🦇' },
-  ]
+  { id: "option1", name: "Interstellar", icon: "🚀" },
+  { id: "option2", name: "Inception", icon: "🌀" },
+  { id: "option3", name: "The Dark Knight", icon: "🦇" },
+];
 
-  const VOTING_DURATION = 5 * 60 * 1000 // 5 minutes in milliseconds
+const VoteCard = ({ isVoting, startingTime, endingTime }) => {
+  const [votes, setVotes] = useState({
+    option1: 0,
+    option2: 0,
+    option3: 0,
+  });
+  const [voted, setVoted] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [timeLeft, setTimeLeft] = useState();
 
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
 
-const VoteCard = () => {
+  useEffect(() => {
+    const maxVotes = Math.max(...Object.values(votes));
+    const winningOption = Object.entries(votes).find(
+      ([_, count]) => count === maxVotes
+    );
+    setWinner(
+      winningOption
+        ? votingOptions.find((option) => option.id === winningOption[0])
+        : null
+    );
+  }, [votes]);
 
-    const [votes, setVotes] = useState({
-        option1: 0,
-        option2: 0,
-        option3: 0,
-      })
-      const [voted, setVoted] = useState(false)
-      const [winner, setWinner] = useState(null)
-      const [timeLeft, setTimeLeft] = useState(VOTING_DURATION)
-    
-      const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0)
-    
-      useEffect(() => {
-        const maxVotes = Math.max(...Object.values(votes))
-        const winningOption = Object.entries(votes).find(([_, count]) => count === maxVotes)
-        setWinner(winningOption ? votingOptions.find(option => option.id === winningOption[0]) : null)
-      }, [votes])
-    
-      useEffect(() => {
-        const timer = setInterval(() => {
-          setTimeLeft((prevTime) => {
-            if (prevTime <= 1000) {
-              clearInterval(timer)
-              return 0
-            }
-            return prevTime - 1000
-          })
-        }, 1000)
-    
-        return () => clearInterval(timer)
-      }, [])
-    
-      const handleVote = (option) => {
-        if (!voted && timeLeft > 0) {
-          setVotes(prev => ({
-            ...prev,
-            [option]: prev[option] + 1
-          }))
-          setVoted(true)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1000) {
+          clearInterval(timer);
+          return 0;
         }
-      }
-    
-      const calculatePercentage = (votes) => {
-        return totalVotes === 0 ? 0 : (votes / totalVotes) * 100
-      }
-    
-      const formatTime = (ms) => {
-        const minutes = Math.floor(ms / 60000)
-        const seconds = Math.floor((ms % 60000) / 1000)
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`
-      }
-    
+        return prevTime - 1000;
+      });
+    }, 1000);
 
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleVote = (option) => {
+    if (!voted && timeLeft > 0) {
+      setVotes((prev) => ({
+        ...prev,
+        [option]: prev[option] + 1,
+      }));
+      setVoted(true);
+    }
+  };
+
+  const calculatePercentage = (votes) => {
+    return totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
+  };
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+
+      const duration = intervalToDuration({
+        start: now,
+        end: fromUnixTime(Number(endingTime)),
+      });
+      setTimeLeft(duration);
+    };
+
+    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 1000);
+    return () => clearInterval(intervalId);
+  }, [endingTime]);
 
   return (
     <>
@@ -78,16 +97,21 @@ const VoteCard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div
-        
-            className="mb-6 text-center"
-          >
-            <Badge variant="secondary" className="text-lg p-2 font-semibold">
-              <Clock className="w-5 h-5 inline-block mr-2" />
-              Time Left: {formatTime(timeLeft)}
-            </Badge>
-          </div>
-          <div className="space-y-6">
+          {/* {Number(startingTime) < getUnixTime(new Date()) ? (
+            getUnixTime(new Date()) > Number(endingTime) ? (
+              <p className="text-red-500 text-center text-xl font-semibold">
+                Vote time end
+              </p>
+            ) : (
+              <TimeCountDown time={timeLeft} />
+            )
+          ) : (
+            <p>Time is comming </p>
+          )} */}
+
+              <DateCountdown targetDate={fromUnixTime(Number(endingTime))}/>
+
+          {/* <div className="space-y-6">
             {votingOptions.map((option) => (
               <div
                 key={option.id}
@@ -102,7 +126,7 @@ const VoteCard = () => {
                   </span>
                   <Button
                     onClick={() => handleVote(option.id)}
-                    disabled={voted || timeLeft === 0}
+                    disabled={voted || timeLeft?.hours === 0}
                     variant={
                       voted && votes[option.id] > 0 ? "default" : "outline"
                     }
@@ -137,7 +161,7 @@ const VoteCard = () => {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
           <div className="mt-8 text-center">
             <p className="text-gray-600 font-medium">
               Total votes: {totalVotes}
@@ -176,3 +200,4 @@ const VoteCard = () => {
 };
 
 export default VoteCard;
+
