@@ -39,8 +39,6 @@ const DateCountdown = ({
   const days = Math.floor(calculateTimeLeft() / (24 * 60 * 60));
 
 
-  console.log(duration)
-
   return (
     <>
       <div className="w-full max-w-md mx-auto pb-4 relative">

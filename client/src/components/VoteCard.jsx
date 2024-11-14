@@ -8,6 +8,9 @@ import {
 } from "date-fns";
 
 import DateCountdown from "./DateCountdown";
+import { useWriteContract } from "wagmi";
+import { contractAbi, contractAddress } from "@/lib/utils";
+import toast from "react-hot-toast";
 
 const votingOptions = [
   { id: "option1", name: "Interstellar", icon: "🚀" },
@@ -15,7 +18,7 @@ const votingOptions = [
   { id: "option3", name: "The Dark Knight", icon: "🦇" },
 ];
 
-const VoteCard = ({ isVoting, startingTime, endingTime, candidates }) => {
+const VoteCard = ({ isVoting, startingTime, endingTime, candidates, refetch }) => {
   const [votes, setVotes] = useState({
     option1: 0,
     option2: 0,
@@ -24,6 +27,7 @@ const VoteCard = ({ isVoting, startingTime, endingTime, candidates }) => {
   const [voted, setVoted] = useState(false);
   const [winner, setWinner] = useState(null);
   const [timeLeft, setTimeLeft] = useState();
+  const {writeContractAsync} = useWriteContract();
 
   const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
 
@@ -41,21 +45,34 @@ const VoteCard = ({ isVoting, startingTime, endingTime, candidates }) => {
 
 
 
-  const handleVote = (option) => {
-    if (!voted && timeLeft > 0) {
-      setVotes((prev) => ({
-        ...prev,
-        [option]: prev[option] + 1,
-      }));
-      setVoted(true);
+  const handleVote = async(option, index) => {
+    console.log(option, index)
+
+    console.log(Number(endingTime) < getUnixTime(new Date()))
+
+    const res = await writeContractAsync({
+      abi:contractAbi,
+      address: contractAddress,
+      functionName: "castVote",
+      args:[index]
+    })
+
+    if(res){
+      refetch()
+      toast.success("Vote Casted")
+      return
     }
+    toast.error("Already vote casted")
+
   };
 
   const calculatePercentage = (votes) => {
     return totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
   };
 
-console.log({startingTime, endingTime,})
+
+
+
   return (
     <>
       <Card className="w-full md:min-w-[445px] overflow-hidden">
@@ -83,7 +100,7 @@ console.log({startingTime, endingTime,})
           )}
           <hr />
           <div className="space-y-6 mt-4">
-            {candidates?.map((option) => (
+            {candidates?.map((option,i) => (
               <div
                 key={option.candidate}
                 initial={{ opacity: 0, y: 20 }}
@@ -99,7 +116,7 @@ console.log({startingTime, endingTime,})
                       option.candidate.length
                     )}
                   </span>
-                  <Button className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                  <Button onClick={() => handleVote(option, i)} className="transition-all duration-300 ease-in-out transform hover:scale-105">
                     <ThumbsUp className="mr-2 h-4 w-4" />
                     Vote
                   </Button>

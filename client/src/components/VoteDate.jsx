@@ -25,7 +25,7 @@ const FormSchema = z.object({
   endingTime: z.string().default("00:00"),
 });
 
-const VoteDate = ({ startingTime, endingTime }) => {
+const VoteDate = ({ startingTime, endingTime, StatingTimeRefetch, EndingTimeRefetch }) => {
   const { data: dateHash, writeContract, } = useWriteContract();
   const { status } = useTransactionConfirmations({ hash: dateHash });
 
@@ -53,8 +53,9 @@ const VoteDate = ({ startingTime, endingTime }) => {
       toast.error("Ending date must be grather than starting date!")
       return
     }
-
     writeContract({abi:contractAbi, address: contractAddress, functionName: "setDate", args: [start, end]})
+    StatingTimeRefetch();
+    EndingTimeRefetch();
   
   };
 

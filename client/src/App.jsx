@@ -44,14 +44,14 @@ function App() {
     config: wagmiConfig,
   });
 
-  const { data: startingTime } = useReadContract({
+  const { data: startingTime, refetch:StatingTimeRefetch } = useReadContract({
     abi: contractAbi,
     address: contractAddress,
     functionName: "startingTime",
     config: wagmiConfig,
   });
 
-  const { data: endingTime } = useReadContract({
+  const { data: endingTime, refetch:EndingTimeRefetch } = useReadContract({
     abi: contractAbi,
     address: contractAddress,
     functionName: "endingTime",
@@ -92,6 +92,7 @@ function App() {
       case 1:
         return (
           <VoteCard
+             refetch ={CandidateRefetch}
             candidates={candidates}
             isVoting={isVoting}
             startingTime={startingTime}
@@ -99,7 +100,7 @@ function App() {
           />
         );
       case 2:
-        return <VoteDate startingTime={startingTime} endingTime={endingTime} />;
+        return <VoteDate StatingTimeRefetch={StatingTimeRefetch} EndingTimeRefetch={EndingTimeRefetch} startingTime={startingTime} endingTime={endingTime} />;
       case 3:
         return <Candidates refetch={CandidateRefetch} candidates={candidates} />;
       case 4:
