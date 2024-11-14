@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { getAddress } from 'viem'
+import { getAddress } from "viem";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,41 +33,35 @@ import { useReadContract, useWriteContract } from "wagmi";
 import { contractAbi, contractAddress } from "../lib/utils";
 
 const FormSchema = z.object({
-  address: z.string().min(42, {
-    message: "Address must must be 42 characters.",
-  }).max(42, "Address must be 42 characters"),
+  address: z
+    .string()
+    .min(42, {
+      message: "Address must must be 42 characters.",
+    })
+    .max(42, "Address must be 42 characters"),
 });
 
-export function AddCandidate({setOpen}) {
-    const {data:hash,failureReason, writeContractAsync } = useWriteContract();
-
+export function AddCandidate({ setOpen, refetch }) {
+  const { writeContractAsync } = useWriteContract();
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
-   
   });
 
+  const onSubmit = async (data) => {
+    const result = await writeContractAsync({
+      abi: contractAbi,
+      address: contractAddress,
+      functionName: "addCandidate",
+      args: [getAddress(data.address)],
+    });
 
-  const  onSubmit = (data) =>{
-    toast.promise(
-        writeContractAsync({
-          abi: contractAbi,
-          address: contractAddress,
-          functionName: "addCandidate",
-          args: [getAddress(data.address)],
-        }),
-        {
-          loading: "Loading",
-          success: "Added successfully",
-          error: "Error to submit the date",
-        }
-      );
-      setOpen(false)
-  }
-
-  console.log(failureReason)
-
-
+    if (result) {
+      refetch();
+      setOpen(false);
+      toast.success("Added success")
+    }
+  };
 
   return (
     <DialogContent className="sm:max-w-lg">
@@ -90,13 +84,16 @@ export function AddCandidate({setOpen}) {
               <FormItem>
                 <FormLabel>Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="ex: 0x00000000000000000000000000000" {...field} />
+                  <Input
+                    placeholder="ex: 0x00000000000000000000000000000"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-           <FormField
+          <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
@@ -138,9 +135,15 @@ export function AddCandidate({setOpen}) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem className="focus:bg-green-100" value="Active">Active</SelectItem>
-                    <SelectItem className="focus:bg-orange-100" value="Pending">Pending</SelectItem>
-                    <SelectItem className="focus:bg-red-100" value="Block">Block</SelectItem>
+                    <SelectItem className="focus:bg-green-100" value="Active">
+                      Active
+                    </SelectItem>
+                    <SelectItem className="focus:bg-orange-100" value="Pending">
+                      Pending
+                    </SelectItem>
+                    <SelectItem className="focus:bg-red-100" value="Block">
+                      Block
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -1,23 +1,26 @@
 import React from "react";
 
 import { useState, useEffect } from "react";
-import { differenceInSeconds, fromUnixTime, getUnixTime, intervalToDuration } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  differenceInSeconds,
+  fromUnixTime,
+  getUnixTime,
+  intervalToDuration,
+} from "date-fns";
+import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 const DateCountdown = ({
-  targetDate = getUnixTime(new Date(Date.now() + 7 * 22 * 60 * 60 * 1000)),
+  targetDate = new Date(Date.now() + 7 * 22 * 60 * 60 * 1000),
+  isVoting, title
 }) => {
+  const calculateTimeLeft = () => differenceInSeconds(targetDate, new Date());
 
-    console.log({targetDate})
-
-
-  const [timeLeft, setTimeLeft] = useState(
-    differenceInSeconds(targetDate, new Date())
-  );
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const difference = differenceInSeconds(targetDate, new Date());
+      const difference = calculateTimeLeft();
       if (difference > 0) {
         setTimeLeft(difference);
       } else {
@@ -33,40 +36,39 @@ const DateCountdown = ({
 
   const formatNumber = (num) => (num || 0).toString().padStart(2, "0");
 
+  const days = Math.floor(calculateTimeLeft() / (24 * 60 * 60));
+
+
   console.log(duration)
 
   return (
     <>
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Time Remaining
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="w-full max-w-md mx-auto pb-4 relative">
+          <div className="absolute right-0">
+          <Badge variant={"outline"} className={isVoting ?"text-green-500" : "text-red-500"}>{isVoting ? "Active" : "Inactive"}</Badge>
+          </div>
+          <h2 className="text-2xl font-bold text-center py-3">
+           {title}
+          </h2>
+        <>
           <div className="grid grid-cols-4 gap-4 text-center">
             {[
-              { label: "Days", value: duration.days },
+              { label: "Days", value: days },
               { label: "Hours", value: duration.hours },
               { label: "Minutes", value: duration.minutes },
               { label: "Seconds", value: duration.seconds },
             ].map(({ label, value }) => (
               <div key={label} className="flex flex-col items-center">
-                <div className="text-4xl font-bold text-primary mb-2">
-                  {formatNumber(value)}
+                <div className={cn(' text-4xl font-bold text-primary mb-2', {"text-red-400": timeLeft === 0})}>
+                  {timeLeft > 0 ?  formatNumber(value): '00'}
                 </div>
-                <div className="text-sm text-muted-foreground">{label}</div>
+                <div className={cn("text-sm text-muted-foreground", {"text-red-400": timeLeft === 0})}>{label}</div>
               </div>
             ))}
           </div>
-          <div className="mt-6 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all duration-1000 ease-linear"
-              style={{ width: `${(timeLeft / (7 * 24 * 60 * 60)) * 100}%` }}
-            ></div>
-          </div>
-        </CardContent>
-      </Card>
+        
+        </>
+      </div>
     </>
   );
 };

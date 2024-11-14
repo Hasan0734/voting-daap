@@ -26,8 +26,8 @@ const FormSchema = z.object({
 });
 
 const VoteDate = ({ startingTime, endingTime }) => {
-  const { data: dateHash, error, writeContractAsync } = useWriteContract();
-  const { status, isLoading } = useTransactionConfirmations({ hash: dateHash });
+  const { data: dateHash, writeContract, } = useWriteContract();
+  const { status } = useTransactionConfirmations({ hash: dateHash });
 
   const isStartingTime = Number(startingTime);
   const isEndingTime = Number(endingTime)
@@ -47,23 +47,17 @@ const VoteDate = ({ startingTime, endingTime }) => {
   const onSubmit = (data) => {
     const start = createUnixFormat(data.startingDate, data.startingTime);
     const end = createUnixFormat(data.endingDate, data.endingTime);
-    toast.promise(
-      
-      writeContractAsync({
-        abi: contractAbi,
-        address: contractAddress,
-        functionName: "setDate",
-        args: [start, end],
-      }),
-      {
-        loading: "Loading",
-        success: "Date added successfully",
-        error: "Error to submit the date",
-      }
-    );
+
+
+    if(start > end) {
+      toast.error("Ending date must be grather than starting date!")
+      return
+    }
+
+    writeContract({abi:contractAbi, address: contractAddress, functionName: "setDate", args: [start, end]})
+  
   };
 
-  console.log({status, isLoading})
 
 
 

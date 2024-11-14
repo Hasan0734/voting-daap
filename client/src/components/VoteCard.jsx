@@ -1,15 +1,12 @@
-import { Badge, Clock, Sparkles, ThumbsUp, Trophy } from "lucide-react";
+import { Badge,  Sparkles, ThumbsUp, Trophy } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import {
-  differenceInSeconds,
-  formatDuration,
   fromUnixTime,
   getUnixTime,
-  intervalToDuration,
 } from "date-fns";
-import TimeCountDown from "./TimeCountDown";
+
 import DateCountdown from "./DateCountdown";
 
 const votingOptions = [
@@ -18,7 +15,7 @@ const votingOptions = [
   { id: "option3", name: "The Dark Knight", icon: "🦇" },
 ];
 
-const VoteCard = ({ isVoting, startingTime, endingTime }) => {
+const VoteCard = ({ isVoting, startingTime, endingTime, candidates }) => {
   const [votes, setVotes] = useState({
     option1: 0,
     option2: 0,
@@ -42,19 +39,7 @@ const VoteCard = ({ isVoting, startingTime, endingTime }) => {
     );
   }, [votes]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1000) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prevTime - 1000;
-      });
-    }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
 
   const handleVote = (option) => {
     if (!voted && timeLeft > 0) {
@@ -70,98 +55,63 @@ const VoteCard = ({ isVoting, startingTime, endingTime }) => {
     return totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
   };
 
-  useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-
-      const duration = intervalToDuration({
-        start: now,
-        end: fromUnixTime(Number(endingTime)),
-      });
-      setTimeLeft(duration);
-    };
-
-    updateCountdown();
-    const intervalId = setInterval(updateCountdown, 1000);
-    return () => clearInterval(intervalId);
-  }, [endingTime]);
-
+console.log({startingTime, endingTime,})
   return (
     <>
-      <Card className="w-full max-w-md overflow-hidden">
+      <Card className="w-full md:min-w-[445px] overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <CardTitle className="text-3xl font-bold text-center flex items-center justify-center gap-2">
             <Sparkles className="w-6 h-6" />
-            Movie Awards 2024
+            Voting 2024
             <Sparkles className="w-6 h-6" />
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          {/* {Number(startingTime) < getUnixTime(new Date()) ? (
-            getUnixTime(new Date()) > Number(endingTime) ? (
-              <p className="text-red-500 text-center text-xl font-semibold">
-                Vote time end
-              </p>
-            ) : (
-              <TimeCountDown time={timeLeft} />
-            )
+        <CardContent className="px-6 pt-4">
+          {Number(startingTime) < getUnixTime(new Date()) ? (
+            // <TimeCountDown time={timeLeft} />
+            <DateCountdown
+              isVoting={isVoting}
+              title={"Time Remaining"}
+              targetDate={fromUnixTime(Number(endingTime))}
+            />
           ) : (
-            <p>Time is comming </p>
-          )} */}
-
-              <DateCountdown targetDate={fromUnixTime(Number(endingTime))}/>
-
-          {/* <div className="space-y-6">
-            {votingOptions.map((option) => (
+            <DateCountdown
+            isVoting={isVoting}
+            title={"Comming soon"}
+            targetDate={fromUnixTime(Number(startingTime))}
+          />
+          )}
+          <hr />
+          <div className="space-y-6 mt-4">
+            {candidates?.map((option) => (
               <div
-                key={option.id}
+                key={option.candidate}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="space-y-2"
+                className="space-y-2 border-b pb-1"
               >
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-lg flex items-center gap-2">
-                    {option.icon} {option.name}
+                    {option.candidate.slice(0, 5)}..
+                    {option.candidate.slice(
+                      option.candidate.length - 5,
+                      option.candidate.length
+                    )}
                   </span>
-                  <Button
-                    onClick={() => handleVote(option.id)}
-                    disabled={voted || timeLeft?.hours === 0}
-                    variant={
-                      voted && votes[option.id] > 0 ? "default" : "outline"
-                    }
-                    className="transition-all duration-300 ease-in-out transform hover:scale-105"
-                  >
-                    {voted && votes[option.id] > 0 ? (
-                      <ThumbsUp className="mr-2 h-4 w-4" />
-                    ) : null}
+                  <Button className="transition-all duration-300 ease-in-out transform hover:scale-105">
+                    <ThumbsUp className="mr-2 h-4 w-4" />
                     Vote
                   </Button>
                 </div>
-                <div className="relative pt-1">
-                  <div className="overflow-hidden h-2 text-xs flex rounded bg-purple-200">
-                    <div
-                      style={{
-                        width: `${calculatePercentage(votes[option.id])}%`,
-                      }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500"
-                      initial={{ width: "0%" }}
-                      animate={{
-                        width: `${calculatePercentage(votes[option.id])}%`,
-                      }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                </div>
+
                 <div className="text-sm text-gray-600 flex justify-between items-center">
-                  <span>{votes[option.id]} votes</span>
-                  <Badge variant="secondary">
-                    {calculatePercentage(votes[option.id]).toFixed(1)}%
-                  </Badge>
+                  <span>{0} votes</span>
                 </div>
               </div>
             ))}
-          </div> */}
+          </div>
+
           <div className="mt-8 text-center">
             <p className="text-gray-600 font-medium">
               Total votes: {totalVotes}
@@ -200,4 +150,3 @@ const VoteCard = ({ isVoting, startingTime, endingTime }) => {
 };
 
 export default VoteCard;
-

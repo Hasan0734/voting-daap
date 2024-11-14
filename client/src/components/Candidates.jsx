@@ -27,63 +27,57 @@ import { contractAbi, contractAddress } from "../lib/utils";
 import { useReadContract } from "wagmi";
 
 // This would typically come from an API or database
-const candidates = [
-  {
-    id: 1,
-    name: "Alex Johnson",
-    role: "Frontend Developer",
-    experience: "5",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Sam Lee",
-    role: "UX Designer",
-    experience: "3",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Taylor Swift",
-    role: "Project Manager",
-    experience: "7",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Jordan Patel",
-    role: "Backend Developer",
-    experience: "4",
-    status: "In Review",
-  },
-  {
-    id: 5,
-    name: "Casey Kim",
-    role: "Data Scientist",
-    experience: "2",
-    status: "Active",
-  },
-];
+// const candidates = [
+//   {
+//     id: 1,
+//     name: "Alex Johnson",
+//     role: "Frontend Developer",
+//     experience: "5",
+//     status: "Active",
+//   },
+//   {
+//     id: 2,
+//     name: "Sam Lee",
+//     role: "UX Designer",
+//     experience: "3",
+//     status: "Active",
+//   },
+//   {
+//     id: 3,
+//     name: "Taylor Swift",
+//     role: "Project Manager",
+//     experience: "7",
+//     status: "Active",
+//   },
+//   {
+//     id: 4,
+//     name: "Jordan Patel",
+//     role: "Backend Developer",
+//     experience: "4",
+//     status: "In Review",
+//   },
+//   {
+//     id: 5,
+//     name: "Casey Kim",
+//     role: "Data Scientist",
+//     experience: "2",
+//     status: "Active",
+//   },
+// ];
 
-const Candidates = () => {
+const Candidates = ({candidates, refetch}) => {
   const [open, setOpen] = useState(false)
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const {data:existCandidate} = useReadContract({
-    abi: contractAbi,
-    address: contractAddress,
-    functionName: "getCandidatesVotes",
-});
-
-
-console.log({existCandidate})
 
 
 
-  const filteredCandidates = candidates.filter((candidate) =>
-    candidate.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+
+  // const filteredCandidates = candidates.filter((candidate) =>
+  //   candidate.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <>
@@ -108,7 +102,7 @@ console.log({existCandidate})
                 <Plus size={25} /> Add
               </Button>
             </DialogTrigger>
-            <AddCandidate setOpen={setOpen}/>
+            <AddCandidate refetch={refetch} setOpen={setOpen}/>
           </Dialog>
         </div>
 
@@ -124,8 +118,8 @@ console.log({existCandidate})
               </TableRow>
             </TableHeader>
             <TableBody>
-              {existCandidate?.map((candidate) => (
-                <TableRow key={candidate.id}>
+              {candidates?.map((candidate) => (
+                <TableRow key={candidate.candidate}>
                   <TableCell className="font-medium">
                     {candidate.candidate}
                   </TableCell>
